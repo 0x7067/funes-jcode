@@ -1,0 +1,29 @@
+convert.mjs
+  s_fa5c88535018b9::t_c1cf3b06c24cff 1-174
+hooks/funes.sh
+  s_fa5c88535018b9::t_67d461f50159e5 1-46
+scripts/funes-index.sh
+  s_fa5c88535018b9::t_b6075d051f7d2d 1-75
+setup
+  s_fa5c88535018b9::t_5db79518bfac1a 1-93
+test/expected.funes.jsonl
+  s_fa5c88535018b9::t_e2910c622d8d8f 1-4
+test/run.sh
+  s_fa5c88535018b9::t_29b9027844433b 1-63
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a2a944b53f3cb76410a951027c3e08c8d716198c",
+  "prompts": {},
+  "sessions": {
+    "s_fa5c88535018b9": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "01a0efad-5ae9-73c8-8611-251aea8e451c",
+        "model": "swe-2"
+      },
+      "human_author": "Pedro Guimarães <21346846+0x7067@users.noreply.github.com>"
+    }
+  }
+}
