@@ -43,6 +43,20 @@ Overrides: `JCODE_HOME` (default `~/.jcode`), `FUNES_HOME`. jcode's own
 `JCODE_HOOK_*` env vars still win over the config entries — the hooks it calls remain the
 dispatcher.
 
+## Environment
+
+The detached index worker inherits the agent's environment. Set `FUNES_HOOK_UNSET` to a
+space-separated list of variable names the worker must not inherit, such as a supervisor's
+per-run token:
+
+```bash
+export FUNES_HOOK_UNSET="AGENT_JOB_LAUNCH_ID"
+```
+
+funes's Hub requests carry `HF_HUB_USER_AGENT_ORIGIN=funes; agent/jcode; agent_version/<ver>`.
+An origin you already set stays in front. The MCP server registration carries
+`funes; agent/jcode` without a version.
+
 ## Converting by hand
 
 ```bash

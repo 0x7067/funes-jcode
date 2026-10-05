@@ -54,6 +54,22 @@ grep -q 'session_end = .*funes.sh' "$JCODE_HOME/config.toml" || { echo "session_
 grep -q 'notify-me' "$HERE/../previous/turn_end" || { echo "previous hook not recorded" >&2; exit 1; }
 [ -f "$FUNES_HOME/spool/jcode/$SID.funes.jsonl" ] || { echo "seed did not convert" >&2; exit 1; }
 
+grep -q 'HF_HUB_USER_AGENT_ORIGIN.*funes; agent/jcode' "$JCODE_HOME/mcp.json" || { echo "MCP server not tagged" >&2; exit 1; }
+
+mkdir -p "$TMP/bin"
+cat >"$TMP/bin/funes" <<'FAKE'
+#!/bin/sh
+printf '%s|%s: %s\n' "${HF_HUB_USER_AGENT_ORIGIN:-}" "${JOB_TOKEN:-}" "$*" >>"$FUNES_TEST_CLI_LOG"
+FAKE
+printf '#!/bin/sh\necho "jcode v9.9.9 (abc)"\n' >"$TMP/bin/jcode"
+chmod +x "$TMP/bin/funes" "$TMP/bin/jcode"
+export FUNES_TEST_CLI_LOG="$TMP/cli.log"
+PATH="$TMP/bin:$PATH" HF_HUB_USER_AGENT_ORIGIN=mine JOB_TOKEN=abc FUNES_HOOK_UNSET="JOB_TOKEN" \
+    JCODE_HOOK_EVENT=turn_end sh "$HERE/../hooks/funes.sh"
+for _ in 1 2 3 4 5 6 7 8 9 10; do [ -s "$FUNES_TEST_CLI_LOG" ] && break; sleep 0.5; done
+expected="mine; funes; agent/jcode; agent_version/9.9.9|: index --harness jcode"
+[ "$(cat "$FUNES_TEST_CLI_LOG")" = "$expected" ] || { echo "funes was asked: $(cat "$FUNES_TEST_CLI_LOG")" >&2; exit 1; }
+
 sh "$HERE/../setup" remove
 ! grep -q '"funes"' "$JCODE_HOME/mcp.json" || { echo "MCP server left behind" >&2; exit 1; }
 grep -q 'turn_end = .*notify-me' "$JCODE_HOME/config.toml" || { echo "previous hook not restored" >&2; exit 1; }

@@ -30,6 +30,16 @@ find_bin() {
     return 1
 }
 
+tag_hub_requests() {
+    origin="funes; agent/$HARNESS${1:+; agent_version/$1}"
+    export HF_HUB_USER_AGENT_ORIGIN="${HF_HUB_USER_AGENT_ORIGIN:+$HF_HUB_USER_AGENT_ORIGIN; }$origin"
+}
+
+agent_version() {
+    bin=$(find_bin "$HARNESS") || return 0
+    "$bin" --version 2>/dev/null | awk 'NR == 1 { sub(/^v/, "", $2); print $2 }'
+}
+
 index() {
     log "index[$HARNESS]: start"
     if "$funes" index --harness "$HARNESS" >>"$LOG" 2>&1; then
@@ -69,6 +79,7 @@ if [ -z "$funes" ] || [ ! -x "$funes" ]; then
     log "index ABORT: funes not found; skipping."
     exit 0
 fi
+tag_hub_requests "$(agent_version)"
 case "${1:-}" in
 --publish) publish "${2:-}" ;;
 *) index ;;

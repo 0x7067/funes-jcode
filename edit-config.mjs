@@ -42,7 +42,7 @@ try {
     cfg.servers.funes = {
       command: bin,
       args: memory ? ["mcp", memory] : ["mcp"],
-      env: {},
+      env: { HF_HUB_USER_AGENT_ORIGIN: "funes; agent/jcode" },
       shared: true,
     };
   } else {

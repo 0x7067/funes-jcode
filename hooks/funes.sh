@@ -29,14 +29,21 @@ run_convert() {
     "$js" "$BUNDLE/convert.mjs" "$sessions" "$spool" "${JCODE_HOOK_SESSION_ID:-}" >>"$LOG" 2>&1
 }
 
+spawn_index() {
+    (
+        for v in ${FUNES_HOOK_UNSET:-}; do unset "$v"; done
+        sh "$BUNDLE/scripts/funes-index.sh" "$@" >>"$LOG" 2>&1 &
+    )
+}
+
 case "${JCODE_HOOK_EVENT:-}" in
 turn_end)
     run_convert
-    sh "$BUNDLE/scripts/funes-index.sh" >>"$LOG" 2>&1 &
+    spawn_index
     ;;
 session_end)
     run_convert
-    sh "$BUNDLE/scripts/funes-index.sh" --publish >>"$LOG" 2>&1 &
+    spawn_index --publish
     ;;
 esac
 
