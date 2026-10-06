@@ -19,9 +19,12 @@ and the dispatcher runs it after funes's work; `setup remove` restores it.
 ## Install
 
 ```bash
-funes add jcode <user|org>/funes-memory --from /path/to/this/bundle
-funes add jcode                          # or omit the memory for a local one
+funes add jcode <user|org>/funes-memory --from hf://buckets/0x7067/funes-integrations/jcode/0.2.0/jcode.tar.gz
+funes add jcode --from hf://buckets/0x7067/funes-integrations/jcode/0.2.0/jcode.tar.gz   # or omit the memory for a local one
 ```
+
+That installs the 0.2.0 release. To install from a clone instead, pass the bundle directory:
+`--from /path/to/this/bundle`.
 
 Remove with:
 
