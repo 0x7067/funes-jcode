@@ -34,6 +34,13 @@ fi
 # setup add/remove against a fake jcode home holding one journal.
 export FUNES_HOME="$TMP/funes" FUNES_AGENT_ID=jcode FUNES_BIN=funes
 export JCODE_HOME="$TMP/jcode"
+
+# Installed as funes installs it: a copy in the agents dir, so the state files setup writes
+# beside itself never land in the checkout, even when an assertion fails before setup remove.
+BUNDLE="$FUNES_HOME/agents/jcode"
+mkdir -p "$BUNDLE"
+(cd "$HERE/.." && tar -cf - --exclude .git .) | (cd "$BUNDLE" && tar -xf -)
+
 mkdir -p "$JCODE_HOME/sessions"
 cp "$HERE/fixture/$SID.journal.jsonl" "$JCODE_HOME/sessions/"
 cat >"$JCODE_HOME/config.toml" <<'EOF'
@@ -46,12 +53,12 @@ turn_end = "~/bin/notify-me"
 EOF
 printf '{}' >"$JCODE_HOME/mcp.json"
 
-sh "$HERE/../setup" add 0x7067/funes-memory
+sh "$BUNDLE/setup" add 0x7067/funes-memory
 
 grep -q '"funes"' "$JCODE_HOME/mcp.json" || { echo "MCP server not registered" >&2; exit 1; }
 grep -q 'turn_end = .*funes.sh' "$JCODE_HOME/config.toml" || { echo "turn_end not wired" >&2; exit 1; }
 grep -q 'session_end = .*funes.sh' "$JCODE_HOME/config.toml" || { echo "session_end not wired" >&2; exit 1; }
-grep -q 'notify-me' "$HERE/../previous/turn_end" || { echo "previous hook not recorded" >&2; exit 1; }
+grep -q 'notify-me' "$BUNDLE/previous/turn_end" || { echo "previous hook not recorded" >&2; exit 1; }
 [ -f "$FUNES_HOME/spool/jcode/$SID.funes.jsonl" ] || { echo "seed did not convert" >&2; exit 1; }
 
 grep -q 'HF_HUB_USER_AGENT_ORIGIN.*funes; agent/jcode' "$JCODE_HOME/mcp.json" || { echo "MCP server not tagged" >&2; exit 1; }
@@ -65,12 +72,12 @@ printf '#!/bin/sh\necho "jcode v9.9.9 (abc)"\n' >"$TMP/bin/jcode"
 chmod +x "$TMP/bin/funes" "$TMP/bin/jcode"
 export FUNES_TEST_CLI_LOG="$TMP/cli.log"
 PATH="$TMP/bin:$PATH" HF_HUB_USER_AGENT_ORIGIN=mine JOB_TOKEN=abc FUNES_HOOK_UNSET="JOB_TOKEN" \
-    JCODE_HOOK_EVENT=turn_end sh "$HERE/../hooks/funes.sh"
+    JCODE_HOOK_EVENT=turn_end sh "$BUNDLE/hooks/funes.sh"
 for _ in 1 2 3 4 5 6 7 8 9 10; do [ -s "$FUNES_TEST_CLI_LOG" ] && break; sleep 0.5; done
 expected="mine; funes; agent/jcode; agent_version/9.9.9|: index --harness jcode"
 [ "$(cat "$FUNES_TEST_CLI_LOG")" = "$expected" ] || { echo "funes was asked: $(cat "$FUNES_TEST_CLI_LOG")" >&2; exit 1; }
 
-sh "$HERE/../setup" remove
+sh "$BUNDLE/setup" remove
 ! grep -q '"funes"' "$JCODE_HOME/mcp.json" || { echo "MCP server left behind" >&2; exit 1; }
 grep -q 'turn_end = .*notify-me' "$JCODE_HOME/config.toml" || { echo "previous hook not restored" >&2; exit 1; }
 ! grep -q 'session_end' "$JCODE_HOME/config.toml" || { echo "session_end left behind" >&2; exit 1; }

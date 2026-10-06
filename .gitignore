@@ -1,3 +1,6 @@
 funes-sync.log
 previous/
 *.tmp
+/memory
+/sessions
+/spool
